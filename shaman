@@ -1,0 +1,129 @@
+#!/usr/bin/python
+import subprocess
+import os
+import sys
+import json
+import argparse
+
+class shaman():
+    def __init__(self, **kwargs):
+        self.homeDir = os.path.expanduser("~")
+        self.path = self.homeDir + os.sep + ".shaman"
+        self.filePath = self.path + os.path.sep + "pseudonymMap.json"
+        dirExists = self.checkdir()
+        fileExists = os.path.isfile(self.filePath)
+        if fileExists:
+            # read path 
+            self.pseudonym_map = self.readJson(self.filePath)
+        else:
+            # empty pseudonym map
+            self.pseudonym_map = {}
+        self.action()
+    def action(self):
+        #Argument Parsing
+        args = self.argument_parser()
+        #print(args)
+        if args.command == "add":
+            self.add(args.alias, args.username, args.ip, args.port)
+        elif args.command == "remove":
+            self.remove(args.alias)
+        elif args.command == "list":
+            self.list()
+        elif args.command == "version":
+            self.version()
+        elif args.command == "run":
+            self.run(args.alias)
+    def argument_parser(self):
+        parser = argparse.ArgumentParser(prog="shaman", description='A simple python script to manage ssh hosts and ips', epilog='Developed by Arjun Somvanshi under the GNU General Public License v3')
+        subparser = parser.add_subparsers(dest="command")
+        subparser.required = True
+        # arguments for add
+        add_args = subparser.add_parser("add")
+        add_args.add_argument("--alias", type=str, help="Unique alias to represent this machine")
+        add_args.add_argument("--username", type=str, help="Username on the host machine")
+        add_args.add_argument("--ip", type=str, help="Public IP address of the machine")
+        add_args.add_argument("--port", type=str, help="Port to use for ssh", default=22)
+        # arguments for remove
+        remove_args = subparser.add_parser("remove")
+        remove_args.add_argument("alias", type=str, help="Remove the machine associated with an alias")
+        # arguments for listing
+        list_args = subparser.add_parser("list")
+        # arguments to run
+        run_args = subparser.add_parser("run")
+        run_args.add_argument("alias", type=str, help="ssh into an aliased machine")
+        # arguments for version
+        version_args = subparser.add_parser("version")
+        return parser.parse_args()
+    def readJson(self, path):
+        try:
+            with open(path, "r") as f:
+               data = json.load(f) 
+        except Exception as e:
+            self.error("Tried reading JSON file in path", e)
+            sys.exit(1)
+        else:
+            return data
+    def writeJson(self, path, data):
+        #print("Entered here somehow")
+        try:
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2) 
+        except Exception as e:
+            self.error("Tried writing JSON file in path", e)
+            sys.exit(1)
+    def error(self, message, e):
+        print(message)
+        print("****")
+        print(str(e))
+        print("****")
+    def checkdir(self):
+        if os.path.isdir(self.path):
+            return True
+        else:
+            try:
+                os.mkdir(self.path)
+            except Exception as e:
+                self.error("Tried making application directory but failed", e)
+                sys.exit(1)
+            else:
+                return False
+    def add(self, pseudonym, username, ip, port):
+        if port == '':
+            port = "22"
+        if pseudonym in self.pseudonym_map:
+            ch = input("This pseudonym already exists do you want to replace it? [y/N]:")
+            if ch.lower() in ["y", "yes"]:
+                self.pseudonym_map[pseudonym] = (username, ip, port)
+                self.writeJson(self.filePath, self.pseudonym_map)
+        else:
+            self.pseudonym_map[pseudonym] = (username, ip, port)
+            self.writeJson(self.filePath, self.pseudonym_map)
+
+    def remove(self, pseudonym):
+        try:
+            del self.pseudonym_map[pseudonym]
+        except Exception as e:
+            self.error("Tried deleting entry but some error has occured", e)
+        else:
+            self.writeJson(self.filePath, self.pseudonym_map)
+    def list(self):
+        for entry in self.pseudonym_map:
+            print("**********")
+            print("Pseudonym: ", entry)
+            entryValue = self.pseudonym_map[entry]
+            print("Username", entryValue[0])
+            print("IP", entryValue[1], end="\t")
+            print("Port", entryValue[2])
+            print("**********")
+    def run(self, pseudonym):
+        entryValue = self.pseudonym_map[pseudonym]
+        cmd = f"ssh {entryValue[0]}@{entryValue[1]} -p {entryValue[2]}"
+        subprocess.call(cmd, text=True, shell=True)
+    def version(self):
+        print("****************")
+        print("shaman v1.0.0")
+        print("Developed by Arjun Somvanshi under the GNU General Public License")
+        print("****************")
+
+if __name__ == '__main__':
+    client = shaman()
