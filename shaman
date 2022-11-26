@@ -88,6 +88,8 @@ class shaman():
             else:
                 return False
     def add(self, pseudonym, username, ip, port):
+        if username == '':
+            username = "ubuntu"
         if port == '':
             port = "22"
         if pseudonym in self.pseudonym_map:
