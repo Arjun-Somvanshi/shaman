@@ -40,7 +40,7 @@ class shaman():
         # arguments for add
         add_args = subparser.add_parser("add")
         add_args.add_argument("--alias", type=str, help="Unique alias to represent this machine")
-        add_args.add_argument("--username", type=str, help="Username on the host machine")
+        add_args.add_argument("--username", type=str, help="Username on the host machine", default="ubuntu")
         add_args.add_argument("--ip", type=str, help="Public IP address of the machine")
         add_args.add_argument("--port", type=str, help="Port to use for ssh", default=22)
         # arguments for remove
