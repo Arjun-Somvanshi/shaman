@@ -29,6 +29,8 @@ class shaman():
             self.remove(args.alias)
         elif args.command == "list":
             self.list()
+        elif args.command == "get":
+            self.get(args.alias)
         elif args.command == "version":
             self.version()
         elif args.command == "run":
@@ -48,6 +50,9 @@ class shaman():
         remove_args.add_argument("alias", type=str, help="Remove the machine associated with an alias")
         # arguments for listing
         list_args = subparser.add_parser("list")
+        # arguments for getting details related to an alias
+        get_args = subparser.add_parser("get")
+        get_args.add_argument("alias", type=str, help="get the details of the machine with the given alias")
         # arguments to run
         run_args = subparser.add_parser("run")
         run_args.add_argument("alias", type=str, help="ssh into an aliased machine")
@@ -117,6 +122,20 @@ class shaman():
             print("IP", entryValue[1], end="\t")
             print("Port", entryValue[2])
             print("**********")
+    def get(self, pseudonym):
+        data = self.readJson(self.filePath)
+        try:
+            entryValue = data[pseudonym]
+            print("**********")
+            print("Pseudonym: ", pseudonym)
+            print("Username", entryValue[0])
+            print("IP", entryValue[1], end="\t")
+            print("Port", entryValue[2])
+            print("**********")
+        except KeyError as e:
+            print("Could not find an IP with the alias", e)
+        except Exception as e:
+            print("Unrecognized exception...", e)
     def run(self, pseudonym):
         entryValue = self.pseudonym_map[pseudonym]
         cmd = f"ssh {entryValue[0]}@{entryValue[1]} -p {entryValue[2]}"
