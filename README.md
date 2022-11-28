@@ -14,7 +14,7 @@ chmod +x install.sh
 * `shaman remove {alias}`
 * `shaman list`
 * `shaman run {alias}`
-* `shaman get {alias}`
+* `shaman get {alias(es)}`
 
 ## Find an alias with `grep`
 `shaman list | grep {something you remember about the alias}`
