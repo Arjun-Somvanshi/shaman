@@ -172,6 +172,7 @@ class shaman():
         entryValue = self.pseudonym_map[pseudonym]
         cmd = f"ssh {entryValue[0]}@{entryValue[1]} -p {entryValue[2]}"
         subprocess.call(cmd, text=True, shell=True)
+
     def version(self):
         print("****************")
         print("shaman v1.0.0")
