@@ -3,15 +3,18 @@ import subprocess
 import os
 import sys
 import json
-import argparse
+import argparse, argcomplete
 
 class shaman():
     def __init__(self, **kwargs):
         self.homeDir = os.path.expanduser("~")
         self.path = self.homeDir + os.sep + ".shaman"
         self.filePath = self.path + os.path.sep + "pseudonymMap.json"
+
         dirExists = self.checkdir()
+
         fileExists = os.path.isfile(self.filePath)
+
         if fileExists:
             # read path 
             self.pseudonym_map = self.readJson(self.filePath)
@@ -19,10 +22,13 @@ class shaman():
             # empty pseudonym map
             self.pseudonym_map = {}
         self.action()
+
     def action(self):
         #Argument Parsing
         args = self.argument_parser()
+
         #print(args)
+
         if args.command == "add":
             self.add(args.alias, args.username, args.ip, args.port)
         elif args.command == "remove":
@@ -35,52 +41,70 @@ class shaman():
             self.version()
         elif args.command == "run":
             self.run(args.alias)
+
     def argument_parser(self):
         parser = argparse.ArgumentParser(prog="shaman", description='A simple python script to manage ssh hosts and ips', epilog='Developed by Arjun Somvanshi under the GNU General Public License v3')
+
         subparser = parser.add_subparsers(dest="command")
         subparser.required = True
+
+        # Get all the stored data
+        data = self.readJson(self.filePath)
+
         # arguments for add
         add_args = subparser.add_parser("add")
         add_args.add_argument("--alias", type=str, help="Unique alias to represent this machine")
         add_args.add_argument("--username", type=str, help="Username on the host machine", default="ubuntu")
         add_args.add_argument("--ip", type=str, help="Public IP address of the machine")
         add_args.add_argument("--port", type=str, help="Port to use for ssh", default=22)
+
         # arguments for remove
         remove_args = subparser.add_parser("remove")
-        remove_args.add_argument("alias", type=str, help="Remove the machine associated with an alias")
+        remove_args.add_argument("alias", type=str, help="Remove the machine associated with an alias", choices=list(data.keys()))
+
         # arguments for listing
         list_args = subparser.add_parser("list")
+
         # arguments for getting details related to an alias
         get_args = subparser.add_parser("get")
-        get_args.add_argument("aliases", type=list, nargs="+", help="get the details of the machine(s) with the given alias(es)")
+        get_args.add_argument("aliases", type=str, nargs="+", help="get the details of the machine(s) with the given alias(es)", choices=list(data.keys()))
+
         # arguments to run
         run_args = subparser.add_parser("run")
-        run_args.add_argument("alias", type=str, help="ssh into an aliased machine")
+        run_args.add_argument("alias", type=str, help="ssh into an aliased machine", choices=list(data.keys()))
+
         # arguments for version
         version_args = subparser.add_parser("version")
+
+        argcomplete.autocomplete(parser)
+
         return parser.parse_args()
+
     def readJson(self, path):
         try:
             with open(path, "r") as f:
-               data = json.load(f) 
+               data = json.load(f)
         except Exception as e:
             self.error("Tried reading JSON file in path", e)
             sys.exit(1)
         else:
             return data
+
     def writeJson(self, path, data):
         #print("Entered here somehow")
         try:
             with open(path, "w") as f:
-                json.dump(data, f, indent=2) 
+                json.dump(data, f, indent=2)
         except Exception as e:
             self.error("Tried writing JSON file in path", e)
             sys.exit(1)
+
     def error(self, message, e):
         print(message)
         print("****")
         print(str(e))
         print("****")
+
     def checkdir(self):
         if os.path.isdir(self.path):
             return True
@@ -92,6 +116,7 @@ class shaman():
                 sys.exit(1)
             else:
                 return False
+
     def add(self, pseudonym, username, ip, port):
         if username == '':
             username = "ubuntu"
@@ -113,6 +138,7 @@ class shaman():
             self.error("Tried deleting entry but some error has occured", e)
         else:
             self.writeJson(self.filePath, self.pseudonym_map)
+
     def list(self):
         for entry in self.pseudonym_map:
             print("**********")
@@ -122,12 +148,15 @@ class shaman():
             print("IP", entryValue[1], end="\t")
             print("Port", entryValue[2])
             print("**********")
+
     def get(self, pseudonyms):
         data = self.readJson(self.filePath)
+
         for pseudonym in pseudonyms:
             try:
                 pseudonym = "".join(pseudonym)
                 entryValue = data[pseudonym]
+
                 print("**********")
                 print("Pseudonym: ", pseudonym)
                 print("Username", entryValue[0])
@@ -138,6 +167,7 @@ class shaman():
                 print("Could not find an IP with the alias", e)
             except Exception as e:
                 print("Unrecognized exception...", e)
+
     def run(self, pseudonym):
         entryValue = self.pseudonym_map[pseudonym]
         cmd = f"ssh {entryValue[0]}@{entryValue[1]} -p {entryValue[2]}"
