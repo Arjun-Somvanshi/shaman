@@ -18,7 +18,7 @@ chmod +x install.sh
 
 # Will place shaman in the right folder and add autocomplete to the necessary files
 ./install.sh
-source .bashrc # Or .zshrc
+source ~/.bashrc # Or ~/.zshrc
 ```
 
 ## Commands
