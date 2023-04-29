@@ -2,10 +2,21 @@
 A tool for managing remote machines with ssh
 
 ## Installation
+Install dependencies:
+```
+# Using sudo to give global autocomplete access to script
+sudo pip install argcomplete
+
+# Active autocomplete
+sudo activate-global-python-argcomplete
+```
+
 ```
 git clone https://github.com/Arjun-Somvanshi/shaman.git
 cd shaman
 chmod +x install.sh
+
+# Will place shaman in the right folder and add autocomplete to the necessary files
 ./install.sh
 ```
 
