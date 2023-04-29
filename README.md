@@ -5,7 +5,7 @@ A tool for managing remote machines with ssh
 Install dependencies:
 ```
 # Using sudo to give global autocomplete access to script
-sudo pip install argcomplete
+pip install argcomplete
 
 # Active autocomplete
 sudo activate-global-python-argcomplete
@@ -18,6 +18,7 @@ chmod +x install.sh
 
 # Will place shaman in the right folder and add autocomplete to the necessary files
 ./install.sh
+source .bashrc # Or .zshrc
 ```
 
 ## Commands
