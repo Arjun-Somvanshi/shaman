@@ -27,6 +27,7 @@ source ~/.bashrc # Or ~/.zshrc
 * `shaman list`
 * `shaman run {alias}`
 * `shaman get {alias(es)}`
+* `shaman refresh` to add machines from tailscale
 
 ## Find an alias with `grep`
 `shaman list | grep {something you remember about the alias}`
