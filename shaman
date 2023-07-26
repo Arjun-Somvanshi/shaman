@@ -21,6 +21,7 @@ class shaman():
         else:
             # empty pseudonym map
             self.pseudonym_map = {}
+            self.writeJson(self.filePath, self.pseudonym_map)
         self.action()
 
     def action(self):
@@ -91,7 +92,6 @@ class shaman():
                data = json.load(f)
         except Exception as e:
             self.error("Tried reading JSON file in path", e)
-            sys.exit(1)
         else:
             return data
 
@@ -148,6 +148,7 @@ class shaman():
         result = subprocess.run(['tailscale', 'status', '--json'], stdout=subprocess.PIPE)
         result = json.loads(result.stdout.strip())
         for peers in result["Peer"]:
+            print("Writing " + result["Peer"][peers]["HostName"] + " to map...")
             self.add(result["Peer"][peers]["HostName"], '', result["Peer"][peers]["TailscaleIPs"][0], '')
         print("Refreshed list from Tailscale")
 
@@ -192,4 +193,7 @@ class shaman():
         print("****************")
 
 if __name__ == '__main__':
-    client = shaman()
+    try:
+        client = shaman()
+    except KeyboardInterrupt:
+    	print("Keyboard interrupt detected, closing...")
