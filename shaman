@@ -148,8 +148,12 @@ class shaman():
         result = subprocess.run(['tailscale', 'status', '--json'], stdout=subprocess.PIPE)
         result = json.loads(result.stdout.strip())
         for peers in result["Peer"]:
-            print("Writing " + result["Peer"][peers]["HostName"] + " to map...")
-            self.add(result["Peer"][peers]["HostName"], '', result["Peer"][peers]["TailscaleIPs"][0], '')
+            try:
+                if "tag:server" in result["Peer"][peers]["Tags"]:
+                    print("Writing " + result["Peer"][peers]["HostName"] + " to map...")
+                    self.add(result["Peer"][peers]["HostName"], '', result["Peer"][peers]["TailscaleIPs"][0], '')
+            except KeyError:
+                print("Skipping " + result["Peer"][peers]["HostName"] + "...")
         print("Refreshed list from Tailscale")
 
     def list(self):
