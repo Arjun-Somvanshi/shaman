@@ -41,7 +41,7 @@ class shaman():
         elif args.command == "version":
             self.version()
         elif args.command == "refresh":
-            self.refresh()
+            self.refresh(args.file)
         elif args.command == "run":
             self.run(args.alias)
 
@@ -70,6 +70,7 @@ class shaman():
 
         # arguments for refresh
         refresh_args = subparser.add_parser("refresh")
+        refresh_args.add_argument("--file", type=str, help="File to read instead of using Tailscale dynamically", default=None)
 
         # arguments for getting details related to an alias
         get_args = subparser.add_parser("get")
@@ -144,9 +145,12 @@ class shaman():
         else:
             self.writeJson(self.filePath, self.pseudonym_map)
 
-    def refresh(self):
-        result = subprocess.run(['tailscale', 'status', '--json'], stdout=subprocess.PIPE)
-        result = json.loads(result.stdout.strip())
+    def refresh(self, file):
+        if file is None:
+            result = subprocess.run(['tailscale', 'status', '--json'], stdout=subprocess.PIPE)
+            result = json.loads(result.stdout.strip())
+        else:
+            result = self.readJson(file)
         for peers in result["Peer"]:
             try:
                 if "tag:server" in result["Peer"][peers]["Tags"]:
